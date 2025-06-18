@@ -10,15 +10,19 @@
         .section { margin-bottom: 2em; }
         label, select { font-size: 1.2em; }
         button { font-size: 1.2em; padding: 0.5em 1em; background: #ffcc80; border: none; cursor: pointer; }
+        .cards img { width: 100px; margin: 10px; cursor: pointer; border: 3px solid transparent; }
+        .cards img.selected { border-color: #ff9800; }
     </style>
 </head>
 <body>
     <h1>GOENGOまほう占い</h1>
+
     <div class="section">
+        <h2>Step 1：生まれ持ったまほう力を診断</h2>
         <label for="birthday">あなたの生まれた日を選んでね：</label>
         <select id="birthday">
             <option value="">選んでください</option>
-            <option value="1">1日</option>
+<option value="1">1日</option>
 <option value="2">2日</option>
 <option value="3">3日</option>
 <option value="4">4日</option>
@@ -50,8 +54,21 @@
 <option value="30">30日</option>
 <option value="31">31日</option>
         </select>
+
+        <p>GOENGOカードを1枚えらんでね：</p>
+        <div class="cards" id="goengoCards">
+            <img src="goengo_card1.png" id="card1" onclick="selectGoengo('card1')" alt="GOENGOカード1">
+            <img src="goengo_card2.png" id="card2" onclick="selectGoengo('card2')" alt="GOENGOカード2">
+            <img src="goengo_card3.png" id="card3" onclick="selectGoengo('card3')" alt="GOENGOカード3">
+        </div>
+        <button onclick="diagnoseBasic()">基本診断する</button>
+        <div id="basicResult" class="section"></div>
     </div>
+
+    <hr>
+
     <div class="section">
+        <h2>Step 2：今日のまほうを占おう</h2>
         <p>どのスイーツが今気になる？</p>
         <div id="sweets">
             <button onclick="selectSweet('choco')">🍫 チョコレート</button>
@@ -64,35 +81,61 @@
             <button onclick="selectSweet('berrycake')">🍓 ベリーケーキ</button>
             <button onclick="selectSweet('millefeuille')">🍰 ミルフィーユ</button>
         </div>
+        <button onclick="showResult()">今日のまほうを診断する</button>
+        <div id="result" class="section"></div>
     </div>
-    <div class="section">
-        <button onclick="showResult()">診断する</button>
-    </div>
-
-    <div id="result" class="section"></div>
 
     <script>
+        let selectedGoengo = "";
         let selectedSweet = "";
+
+        function selectGoengo(id) {
+            selectedGoengo = id;
+            document.querySelectorAll(".cards img").forEach(img => img.classList.remove("selected"));
+            document.getElementById(id).classList.add("selected");
+        }
 
         function selectSweet(name) {
             selectedSweet = name;
             alert("スイーツカード「" + name + "」を選びました！");
         }
 
-        function showResult() {
+        function diagnoseBasic() {
             const day = document.getElementById("birthday").value;
-            if (!day || !selectedSweet) {
-                alert("生まれた日とスイーツカードを選んでください！");
+            if (!day || !selectedGoengo) {
+                alert("生まれた日とGOENGOカードを選んでください！");
                 return;
             }
-            document.getElementById("result").innerHTML = 
-                `<h2>診断結果</h2>
-                <p>あなたのまほうタイプは「〇〇まほう」（仮）です。</p>
-                <p>※これはサンプルです。本実装では診断ロジックが反映されます。</p>
-                <p>詳しくはLINEで「GOENGO診断結果PDF」を受け取ってね！</p>
-                <p><img src="qr_sample.png" width="150" alt="LINE QR"></p>`;
+            const basicType = determineMagicType(day, selectedGoengo);
+            document.getElementById("basicResult").innerHTML = 
+                `<h3>あなたの「生まれ持ったまほう」は：${basicType}</h3>`;
+        }
+
+        function determineMagicType(day, cardId) {
+            const dayNum = parseInt(day);
+            const cardNum = parseInt(cardId.replace("card", ""));
+            const index = (dayNum + cardNum) % 7;
+            const types = ["ひかりのまほう", "いやしのまほう", "ひらめきのまほう", 
+                           "まもりのまほう", "つながりのまほう", "ととのえのまほう", "まなびのまほう"];
+            return types[index];
+        }
+
+        function showResult() {
+            if (!selectedSweet) {
+                alert("スイーツカードを選んでください！");
+                return;
+            }
+            const sweetMap = {
+                choco: "チョコレート", dorayaki: "どらやき", montblanc: "モンブラン",
+                yokan: "ようかん", dango: "だんご", choux: "シュークリーム",
+                pudding: "プリン", berrycake: "ベリーケーキ", millefeuille: "ミルフィーユ"
+            };
+            const sweet = sweetMap[selectedSweet];
+            document.getElementById("result").innerHTML =
+                `<h3>今日のあなたに必要なまほうは：${sweet}のまほう</h3>
+                <p>詳しいPDF診断はLINEでプレゼント中！</p>
+                <img src="qr_sample.png" width="150" alt="LINE QR">`;
         }
     </script>
-<script src="result_logic.js"></script>
 </body>
 </html>
